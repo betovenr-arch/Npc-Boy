@@ -1,0 +1,73 @@
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local camera = Workspace.CurrentCamera
+local USER_ID = 7962593768 -- ID atualizado
+
+-- Variáveis de controle
+local isPossessing = false
+local npc = nil
+
+-- Função para criar o NPC e copiar as animações
+local function spawnNPC()
+    if npc then npc:Destroy() end
+    
+    local sucesso, model = pcall(function()
+        return Players:CreateHumanoidModelFromUserId(USER_ID)
+    end)
+    
+    if sucesso and model then
+        npc = model
+        -- Nome atualizado aqui
+        npc.Name = "WEB LOLOLU" 
+        
+        npc:PivotTo(player.Character:GetPivot() * CFrame.new(5, 0, 0))
+        npc.Parent = Workspace
+        
+        -- Copiar o script de animação
+        local myAnimate = player.Character:FindFirstChild("Animate")
+        if myAnimate then
+            local animateClone = myAnimate:Clone()
+            animateClone.Parent = npc 
+        end
+        
+        print("WEB LOLOLU criado! Pressione 'Q' para controlar.")
+    else
+        warn("Erro ao criar NPC. Verifique se o ID está correto.")
+    end
+end
+
+-- Lógica de Controle
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.Q then
+        if not npc then return end
+        
+        local char = player.Character
+        local human = char:FindFirstChild("Humanoid")
+        local npcHuman = npc:FindFirstChild("Humanoid")
+        local rootPart = char:FindFirstChild("HumanoidRootPart")
+        local npcRoot = npc:FindFirstChild("HumanoidRootPart")
+        
+        if not isPossessing then
+            -- ATIVAR CONTROLE
+            isPossessing = true
+            if rootPart then rootPart.Anchored = true end
+            if npcRoot then npcRoot.Anchored = false end
+            camera.CameraSubject = npcHuman
+            print("Controlando: WEB LOLOLU")
+        else
+            -- DESATIVAR CONTROLE
+            isPossessing = false
+            if rootPart then rootPart.Anchored = false end
+            camera.CameraSubject = human
+            print("Voltando ao personagem original")
+        end
+    end
+end)
+
+-- Inicia o processo
+spawnNPC()
